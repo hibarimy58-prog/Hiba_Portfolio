@@ -45,6 +45,12 @@ for (let i = 0; i < testimonialsItem.length; i++) {
     modalTitle.innerHTML = this.querySelector("[data-testimonials-title]").innerHTML;
     modalText.innerHTML = this.querySelector("[data-testimonials-text]").innerHTML;
 
+    if (this.classList.contains("achievement-post-item")) {
+      modalContainer.classList.add("achievement-modal");
+    } else {
+      modalContainer.classList.remove("achievement-modal");
+    }
+
     testimonialsModalFunc();
 
   });
@@ -58,23 +64,21 @@ if (overlay) overlay.addEventListener("click", testimonialsModalFunc);
 
 
 // custom select variables
-const select = document.querySelector("[data-select]");
-const selectItems = document.querySelectorAll("[data-select-item]");
-const selectValue = document.querySelector("[data-selecct-value]");
-const filterBtn = document.querySelectorAll("[data-filter-btn]");
+const selects = document.querySelectorAll("[data-select]");
 
-if (select) {
+for (let i = 0; i < selects.length; i++) {
+  const select = selects[i];
+  const selectItems = select.parentNode.querySelectorAll("[data-select-item]");
+  const selectValue = select.querySelector("[data-selecct-value]");
+
   select.addEventListener("click", function () { elementToggleFunc(this); });
 
-  // add event in all select items
   for (let i = 0; i < selectItems.length; i++) {
     selectItems[i].addEventListener("click", function () {
-
       let selectedValue = this.innerText.toLowerCase();
       if (selectValue) selectValue.innerText = this.innerText;
       elementToggleFunc(select);
-      filterFunc(selectedValue);
-
+      filterFunc(selectedValue, select.closest('article'));
     });
   }
 }
@@ -82,41 +86,37 @@ if (select) {
 // filter variables
 const filterItems = document.querySelectorAll("[data-filter-item]");
 
-const filterFunc = function (selectedValue) {
-
-  for (let i = 0; i < filterItems.length; i++) {
-
+const filterFunc = function (selectedValue, parent = document) {
+  const items = parent.querySelectorAll("[data-filter-item]");
+  for (let i = 0; i < items.length; i++) {
     if (selectedValue === "all") {
-      filterItems[i].classList.add("active");
-    } else if (selectedValue === filterItems[i].dataset.category) {
-      filterItems[i].classList.add("active");
+      items[i].classList.add("active");
+    } else if (selectedValue === items[i].dataset.category) {
+      items[i].classList.add("active");
     } else {
-      filterItems[i].classList.remove("active");
+      items[i].classList.remove("active");
     }
-
   }
-
 }
 
 // add event in all filter button items for large screen
-if (filterBtn.length > 0) {
-  let lastClickedBtn = filterBtn[0];
+const filterBtns = document.querySelectorAll("[data-filter-btn]");
 
-  for (let i = 0; i < filterBtn.length; i++) {
+for (let i = 0; i < filterBtns.length; i++) {
+  filterBtns[i].addEventListener("click", function () {
+    let selectedValue = this.innerText.toLowerCase();
+    filterFunc(selectedValue, this.closest('article'));
 
-    filterBtn[i].addEventListener("click", function () {
-
-      let selectedValue = this.innerText.toLowerCase();
-      if (selectValue) selectValue.innerText = this.innerText;
-      filterFunc(selectedValue);
-
-      lastClickedBtn.classList.remove("active");
+    // Find the parent list and update active state only for buttons in that list
+    const parentList = this.closest('.filter-list');
+    if (parentList) {
+      const sibs = parentList.querySelectorAll("[data-filter-btn]");
+      for (let j = 0; j < sibs.length; j++) {
+        sibs[j].classList.remove("active");
+      }
       this.classList.add("active");
-      lastClickedBtn = this;
-
-    });
-
-  }
+    }
+  });
 }
 
 
